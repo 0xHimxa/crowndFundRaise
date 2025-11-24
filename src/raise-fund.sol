@@ -19,6 +19,22 @@ contract RaiseFunds {
     }
 
 
+
+
+ // Struct representing the details of a fundraising project
+     struct  FundRaiseInfo {
+        string name;                  // Project name
+        address payable owner;        // Owner of the project
+        uint256 goal;                 // Funding goal
+        uint256 totalRaised;          // Total ETH raised so far
+        bool isActive;                // True if project is currently accepting funds
+        bool isCompleted;             // True if goal is reached
+        bool isRefunded;  
+        bool exits;         // True if funds were refunded
+    }
+
+
+
     // Using a library for price conversions 
     using PriceConverter for uint256;
 
@@ -41,17 +57,7 @@ contract RaiseFunds {
     Funders[] public funderinfo;
     
 
-    // Struct representing the details of a fundraising project
-     struct  FundRaiseInfo {
-        string name;                  // Project name
-        address payable owner;        // Owner of the project
-        uint256 goal;                 // Funding goal
-        uint256 totalRaised;          // Total ETH raised so far
-        bool isActive;                // True if project is currently accepting funds
-        bool isCompleted;             // True if goal is reached
-        bool isRefunded;  
-        bool exits;         // True if funds were refunded
-    }
+   
 
     // Function to create a new fundraising project
     function createproject(string calldata _name, uint256 _goal) external {
@@ -75,7 +81,7 @@ contract RaiseFunds {
     }
 
     // Function to fund a project
-    function fundProject(string  calldata _name) public payable {
+    function fundProject(string  memory _name) public payable {
         // Check if sent ETH meets minimum USD requirement
         if (msg.value.converterUsd() < MINIMUM_USD) {
             revert IncreaseAmount('Sent ETH is below minimum requirement');
@@ -137,17 +143,31 @@ function withdrawFundRaised(string calldata _name) external {
 
 
 
-function getProjectInfo( string calldata _name) external view returns(FundRaiseInfo memory){
-    FundRaiseInfo memory projectInfo = fundRaisingProjects[_name];
- return  projectInfo;
+function getProjectInfo( string memory _name) external view returns (
+        string memory name, 
+        address owner, // address payable is simplified to address in returns
+        uint256 goal, 
+        uint256 totalRaised, 
+        bool isActive, 
+        bool isCompleted, 
+        bool isRefunded,
+        bool exits
+    ){
+    FundRaiseInfo memory info = fundRaisingProjects[_name];
+  return (
+        info.name, 
+        info.owner, 
+        info.goal, 
+        info.totalRaised, 
+        info.isActive, 
+        info.isCompleted, 
+        info.isRefunded,
+        info.exits
+    );
 
 }
 
 
-function getRaiseInfo() external pure returns (FundRaiseInfo memory){
-    FundRaiseInfo memory fundRaiseInfo;
-    return  fundRaiseInfo;
-}
 
 
     }

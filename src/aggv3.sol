@@ -11,9 +11,9 @@ library PriceConverter {
 
         (, int256 price, , , ) = priceData.latestRoundData();
 
-require(price > 0, "Invalid price");
 
-        return uint256(price * 1e10);
+
+        return uint256(price )* 1e10;
     }
 
     function converterUsd(uint256 _ethamount) internal view returns (uint256) {
