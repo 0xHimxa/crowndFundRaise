@@ -6,16 +6,21 @@ pragma solidity 0.8.30;
 // bolean that handle it state
  import {PriceConverter} from './aggv3.sol';
 
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 
 // Custom error definition for gas-efficient error handling
 error IncreaseAmount(string _message);
 
 contract RaiseFunds {
     address public immutable I_OWNER;
+    AggregatorV3Interface private immutable PRICEFEEDADREESS;
 
 
-    constructor(){
+
+    constructor(address _priceFeedAddress){
         I_OWNER = payable ( msg.sender);
+        PRICEFEEDADREESS = AggregatorV3Interface(_priceFeedAddress);
     }
 
 
@@ -39,10 +44,10 @@ contract RaiseFunds {
     using PriceConverter for uint256;
 
     // Minimum funding amount in USD (scaled to 18 decimals)
-    uint256 public constant MINIMUM_USD = 2e18;
+    uint256 private constant MINIMUM_USD = 2e18;
 
     // Mapping of project names to their fundraising info
-    mapping (string projectname => FundRaiseInfo) public fundRaisingProjects;
+    mapping (string projectname => FundRaiseInfo) private fundRaisingProjects;
 
    
 
@@ -54,7 +59,7 @@ contract RaiseFunds {
 
 
      //funder test
-    Funders[] public funderinfo;
+    Funders[] private funderinfo;
     
 
    
@@ -83,7 +88,7 @@ contract RaiseFunds {
     // Function to fund a project
     function fundProject(string  memory _name) public payable {
         // Check if sent ETH meets minimum USD requirement
-        if (msg.value.converterUsd() < MINIMUM_USD) {
+        if (msg.value.converterUsd(PRICEFEEDADREESS) < MINIMUM_USD) {
             revert IncreaseAmount('Sent ETH is below minimum requirement');
         }
 
@@ -167,6 +172,24 @@ function getProjectInfo( string memory _name) external view returns (
 
 }
 
+function getaggV()public view returns(uint256){
+return PRICEFEEDADREESS.version();
+}
+
+
+function getFundedAmount(uint256 _funderIndex) external view returns( address funder,uint256 amount){
+
+Funders memory funderInfos = funderinfo[_funderIndex];
+
+return (funderInfos.funder,funderInfos.amount);
+
+}
+
+
+function getMinimumUsd() external view returns(uint256){
+
+    return MINIMUM_USD;
+}
 
 
 
